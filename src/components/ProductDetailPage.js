@@ -18,7 +18,6 @@ class ProductDetailPage extends React.Component {
     }
 
     componentDidMount() { 
-        console.log(this.props)
         const productName = this.props.match.params.productName
         const product = this.findProductByName(productName)
         const attributes  = this.initializeSelectedAttributesForProduct(product) 
@@ -41,7 +40,7 @@ class ProductDetailPage extends React.Component {
                     <div className={`${currentProduct.gallery.length > 3 ? "current-product-other-photos-greater-than-3": "current-product-other-photos-smaller-than-3"}`}>
                         {
                             currentProduct.gallery.map((photo, index) => { 
-                                return <img onClick={() => this.choosePhoto(index)} src={photo} alt={currentProduct.name} className={`small-gallery-photo ${index === mainPhoto ? "photo-highlighted": null}`}  key={index}/>
+                                return <img onClick={() => this.choosePhoto(index)} src={photo} alt={`${currentProduct.name + index}`} className={`small-gallery-photo ${index === mainPhoto ? "photo-highlighted": null}`}  key={index}/>
                             })
                         }
                     </div>
@@ -106,7 +105,6 @@ class ProductDetailPage extends React.Component {
             this.props.addToCart(product)
             this.resetProductAttributesState()
         } else { 
-            console.log(validationArray)
             alert(`Please specify value for: ${validationArray[0].id}`)    
         }
     }

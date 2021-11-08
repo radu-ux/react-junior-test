@@ -83,7 +83,7 @@ const cartSlice = createSlice({
                     product.productQuantity--
                 }
             })
-        },
+        },        
 
         updateCurrency: (state, action) => { 
             if(state.products.length > 0) {

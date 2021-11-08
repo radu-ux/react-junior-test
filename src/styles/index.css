@@ -235,6 +235,24 @@ header {
     background: transparent;
 }
 
+.store-cart-heading { 
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.remove-from-cart-button { 
+    align-self: center;
+    background-color: transparent;
+    border: none;
+    align-self: center;
+}
+
+.remove-from-cart-button:hover { 
+    cursor: pointer;
+}
+
+
 .store-cart-number { 
     display: flex;
     justify-content: center;
@@ -483,7 +501,7 @@ header {
 }
 
 .current-product-name { 
-    font-weight: 300;
+    font-weight: 700;
 }
 
 .current-product-attributes { 

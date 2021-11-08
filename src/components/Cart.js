@@ -1,6 +1,7 @@
 import React from 'react'
+import TrashCan from '../images/trash-can.svg'
 import { connect } from 'react-redux'
-import { increaseProductQuantity, decreaseProductQuantity } from '../store/slices/cartSlice'
+import { increaseProductQuantity, decreaseProductQuantity, removeFromCart } from '../store/slices/cartSlice'
 
 class Cart extends React.Component { 
 
@@ -23,8 +24,11 @@ class Cart extends React.Component {
                             <div className="cart-preview-product main-cart-product-separator" key={product.id}>
                                 <div className="main-cart-product-details">
                                     <div className="current-product-details-group">
-                                        <h1 className="current-product-brand">{product.productName}</h1>
-                                        <h2 className="current-product-name">{product.productBrand}</h2>
+                                        <div className="store-cart-heading">
+                                            <h1 className="current-product-name">{product.productName}</h1>
+                                            <button className="remove-from-cart-button"><img height="20" src={TrashCan} alt="trash-can" onClick={() => this.removeProductFromCart(product)}/></button>
+                                        </div>
+                                        <h2 className="current-product-brand">{product.productBrand}</h2>
                                     </div>
                                     <h3>{product.productPrice}</h3>
                                     <div className="current-product-attributes">
@@ -75,6 +79,10 @@ class Cart extends React.Component {
     decreaseQuantity = product => {
         this.props.decreaseQuantity(product)
     }
+
+    removeProductFromCart = product => { 
+        this.props.removeProductFromCart(product)
+    }
 }
 
 const mapStateToProps = state => ({ 
@@ -84,6 +92,7 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => ({ 
     increaseQuantity: product => dispatch(increaseProductQuantity(product)),
     decreaseQuantity:  product => dispatch(decreaseProductQuantity(product)),
+    removeProductFromCart: product => dispatch(removeFromCart(product))
 })
 
 export default connect(mapStateToProps,mapDispatchToProps)(Cart)

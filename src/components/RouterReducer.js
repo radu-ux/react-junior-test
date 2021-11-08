@@ -25,7 +25,6 @@ class RouterReducer extends React.Component {
 
     isProductFromCategoryValid = (categoryName, productName) => { 
         const category = this.props.categories.find(category => category.name === categoryName)
-        console.log(category, productName)
         const productObj = category.products.find(product => product.name === productName)
         if(productObj !== undefined) {
             return true
@@ -35,7 +34,6 @@ class RouterReducer extends React.Component {
     }
 
     componentDidUpdate(prevProps) { 
-        console.log(prevProps)
         if(prevProps.areCategoriesFetched !== this.props.areCategoriesFetched || prevProps.match.params.category !== this.props.match.params.categoryName) { 
             const categoryName = this.props.match.params.categoryName
             if(categoryName !== undefined) { 
@@ -46,7 +44,6 @@ class RouterReducer extends React.Component {
 
     render() { 
         const { categoryName, productName } = this.props.match.params
-        console.log(this.props)
      
         if(this.props.match.path === '/') {
             return this.props.areCategoriesFetched ? <Redirect to={`/${this.getDefaultCategoryName()}`} /> : null
