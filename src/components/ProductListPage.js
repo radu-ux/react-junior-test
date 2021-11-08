@@ -18,7 +18,7 @@ class ProductListPage extends React.Component {
                                 <img height="280" src={product.gallery[0]} alt={product.name} id={product.name}></img>
                                 <div className="product-details">
                                     <h3 className="product-name">{product.name}</h3>
-                                    <h3 className="product-price">{this.props.currencyConverter(product.prices, this.props.currentCurrency)}</h3>
+                                    <h3 className="product-price">{this.props.priceToString(product.prices, this.props.currentCurrency)}</h3>
                                 </div>
                                 {product.inStock ? null : <h2 className="not-in-stock-text">out of stock</h2>}
                             </div>

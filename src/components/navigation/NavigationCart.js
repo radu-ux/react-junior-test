@@ -3,6 +3,7 @@ import EmptyCartBlack from '../../images/EmptyCartBlack.svg'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router'
 import { increaseProductQuantity, decreaseProductQuantity } from '../../store/slices/cartSlice'
+import { PRICING_SYMBOLS } from '../../util/pricing_symbols'
 
 class NavigationCart extends React.Component { 
     
@@ -49,7 +50,7 @@ class NavigationCart extends React.Component {
                                     <p>{product.productName}</p>
                                     <p>{product.productBrand}</p>
                                 </div>
-                                <p>{product.productPrice}</p>
+                                <p>{PRICING_SYMBOLS[product.productCurrency] + " " + product.amountValue}</p>
                                 <div className="current-product-attributes cart-preview-attributes-wrapper">
                                 {
                                     product.productAttributes.map(attribute => { 

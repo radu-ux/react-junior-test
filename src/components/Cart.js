@@ -2,6 +2,7 @@ import React from 'react'
 import TrashCan from '../images/trash-can.svg'
 import { connect } from 'react-redux'
 import { increaseProductQuantity, decreaseProductQuantity, removeFromCart } from '../store/slices/cartSlice'
+import { PRICING_SYMBOLS } from '../util/pricing_symbols'
 
 class Cart extends React.Component { 
 
@@ -30,7 +31,7 @@ class Cart extends React.Component {
                                         </div>
                                         <h2 className="current-product-brand">{product.productBrand}</h2>
                                     </div>
-                                    <h3>{product.productPrice}</h3>
+                                    <h3>{PRICING_SYMBOLS[product.productCurrency] + " " + product.amountValue}</h3>
                                     <div className="current-product-attributes">
                                     {
                                         product.productAttributes.map((attribute, attributeIndex) => { 

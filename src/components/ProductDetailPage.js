@@ -76,7 +76,7 @@ class ProductDetailPage extends React.Component {
                     </div>
                     <div className="current-product-details-group">
                         <h3 className="attribute-title">Price:</h3>
-                        <h3 className="current-product-price">{this.props.currencyConverter(currentProduct.prices, this.props.currentCurrency)}</h3>
+                        <h3 className="current-product-price">{this.props.priceToString(currentProduct.prices, this.props.currentCurrency)}</h3>
                     </div>
                     <button className="add-to-cart-button" onClick={this.addProductToCart}>Add to cart</button>
                     <div className="current-products-description" dangerouslySetInnerHTML={{__html: sanitizer(currentProduct.description)}}></div>
@@ -94,11 +94,12 @@ class ProductDetailPage extends React.Component {
         const productName = this.state.currentProduct.name
         const productBrand = this.state.currentProduct.brand
         const productPhoto = this.state.currentProduct.gallery[0]
-        const productPrice = this.props.currencyConverter(this.state.currentProduct.prices, this.props.currentCurrency)
+        const productCurrency = this.props.currentCurrency
+        const amountValue = this.props.getAmountForCurrency(this.state.currentProduct.prices, this.props.currentCurrency)
         const productAttributes = this.getProductAttributes(this.state.currentProduct)
         const productQuantity = 1
         const productPrices = this.state.currentProduct.prices
-        const product = {productName, productBrand, productPhoto, productPrice, productQuantity, productPrices, productAttributes}
+        const product = {productName, productBrand, productPhoto, productQuantity, productCurrency, amountValue, productPrices, productAttributes}
         const validationArray = this.isValidProduct(product)
 
         if(validationArray.length === 0) {

@@ -26,16 +26,27 @@ const areProductsTheSame = (cartProduct, currentProduct) => {
     return areProductsTheSame
 }
 
-const getPriceForCurrentCurrency = (prices, newCurrency) => {
+const getInitialAmountForCurrency = (prices, currentCurrency) => {
     var amount = 0
-    prices.forEach(price => {
-        if(price.currency === newCurrency) {
-            amount = price.amount;
-        } 
+    prices.forEach(price => { 
+        if(price.currency === currentCurrency) {
+            amount = price.amount
+        }
     })
 
-    return PRICING_SYMBOLS[newCurrency] + " " + amount 
+    return amount
 }
+
+const getCurrentAmountForCurrency = (prices, newCurrency, quantity) => { 
+    const initialAmount = getInitialAmountForCurrency(prices, newCurrency)
+    var newAmount = 0
+    for(var i=0; i<quantity; i++) {
+        newAmount += initialAmount
+    }
+
+    return newAmount
+}
+
 
 const cartSlice = createSlice({
     name: 'cart',
@@ -50,6 +61,7 @@ const cartSlice = createSlice({
                     var areProductsEqual =false
                     if(areProductsTheSame(cartProduct, currentProduct)) { 
                         cartProduct.productQuantity++
+                        cartProduct.amountValue += getInitialAmountForCurrency(action.payload.productPrices, action.payload.productCurrency)
                         productAlreadyInCart=true
                         areProductsEqual=true
                         break
@@ -70,25 +82,31 @@ const cartSlice = createSlice({
         },
         
         increaseProductQuantity: (state, action) => { 
+            const initialPrice = getInitialAmountForCurrency(action.payload.productPrices, action.payload.productCurrency)
             state.products.forEach(product => { 
                 if(areProductsTheSame(product, action.payload)) { 
                     product.productQuantity++
+                    product.amountValue = parseFloat((product.amountValue + initialPrice).toFixed(2))
                 }
             })
         },
 
         decreaseProductQuantity: (state, action) => { 
+            const initialPrice = getInitialAmountForCurrency(action.payload.productPrices, action.payload.productCurrency)
             state.products.forEach(product => { 
                 if(areProductsTheSame(product, action.payload) && product.productQuantity > 1) { 
                     product.productQuantity--
+                    product.amountValue = parseFloat((product.amountValue - initialPrice).toFixed(2))
                 }
             })
         },        
 
         updateCurrency: (state, action) => { 
+            const newCurrency = action.payload
             if(state.products.length > 0) {
                 state.products.forEach(product => { 
-                    product.productPrice = getPriceForCurrentCurrency(product.productPrices, action.payload)
+                    product.productCurrency = newCurrency
+                    product.amountValue = getCurrentAmountForCurrency(product.productPrices, newCurrency, product.productQuantity) 
                 })
             }
         }
