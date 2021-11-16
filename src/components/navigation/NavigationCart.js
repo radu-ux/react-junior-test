@@ -1,8 +1,13 @@
 import React from 'react'
 import EmptyCartBlack from '../../images/EmptyCartBlack.svg'
+import TrashCan from '../../images/trash-can.svg'
+import CSSClassName from '../../util/css-class-name'
+import CartProductAttributes from '../shared/CartProductAttributes'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router'
-import { increaseProductQuantity, decreaseProductQuantity } from '../../store/slices/cartSlice'
+import { increaseProductQuantity, decreaseProductQuantity, removeFromCart } from '../../store/slices/cartSlice'
+import { setCurrencySwitcherState } from '../../store/slices/currenciesSlice'
+import { setBackdropVisibility } from "../../store/slices/backdropSlice"
 import { PRICING_SYMBOLS } from '../../util/pricing_symbols'
 
 class NavigationCart extends React.Component { 
@@ -12,86 +17,101 @@ class NavigationCart extends React.Component {
         this.state = {
             shouldShowCartContent: false
         }
+
+        this.needToDisableScrolling = false
     }
     
     componentDidMount() { 
-       this.setState({shouldShowCartContent: false})
+        this.setState({shouldShowCartContent: false})
     }
     
+    componentWillUnmount() {
+        document.removeEventListener("scroll", this.handleScrollbarDisabling)
+    }
+
     render() { 
-        const { shouldShowCartContent } = this.state
 
         return (
-            <div onMouseEnter={this.showCartPreview} onMouseLeave={this.hideCartPreview} className="store-cart-wrapper">
-                <button className="store-cart" onClick={this.navigateToCart}>
-                    <img className="store-cart-logo" src={EmptyCartBlack} alt="store-cart"/>
-                    <div className={`store-cart-number ${this.props.cart.length === 0 ? "store-cart-number-invisible" : "store-cart-number-visible" }`} > 
-                        <p>{this.props.cart.length}</p>
-                    </div>
-                </button>
-                <div className={`cart-preview ${shouldShowCartContent ? "show-cart-preview" : "hide-cart-preview"}`}>
-                    <h3>My Bag: <span className="cart-products-count">{this.props.cart.length} {this.props.cart.length === 1 ? "item": "items"}</span></h3>
-                    {this.renderCartContent()}
-                </div>
+            <div className="store-cart-wrapper" onMouseEnter={this.showCartPreview} onMouseLeave={this.hideCartPreview} >
+                {this.renderCartButton()}
+                {this.renderCartContent()}
             </div>
+        )
+    }
+
+    renderCartButton = () => {
+        const storeCartBadgeVisibility = this.props.itemCounter === 0 ? CSSClassName.store_cart_badge_invisible : CSSClassName.store_cart_badge_visible
+        return (
+            <button className="store-cart" onClick={this.navigateToCart}>
+                <img className="store-cart-logo" src={EmptyCartBlack} alt="store-cart"/>
+                <div className={`store-cart-badge ${storeCartBadgeVisibility}`} > 
+                    <p>{this.props.itemCounter}</p>
+                </div>
+            </button>
         )
     }
 
     renderCartContent = () => {
-        const cartProducts = this.props.cart
+        const showCartClassName = this.state.shouldShowCartContent ? CSSClassName.show_cart_preview : CSSClassName.hide_cart_preview
+        const itemCountText = this.props.cartProducts.length === 1 ? CSSClassName.item : CSSClassName.items
 
         return (
-            <div className="cart-preview-product-container">
-                {cartProducts.map(product => { 
-                    return (
-                        <div className="cart-preview-product" key={product.id}>
-                            <div className="cart-preview-product-details">
-                                <div className="current-product-details-group">
-                                    <p>{product.productName}</p>
-                                    <p>{product.productBrand}</p>
-                                </div>
-                                <p>{PRICING_SYMBOLS[product.productCurrency] + " " + product.amountValue}</p>
-                                <div className="current-product-attributes cart-preview-attributes-wrapper">
-                                {
-                                    product.productAttributes.map(attribute => { 
-                                        return (
-                                            <div className="attribute-wrapper" key={attribute.id}>
-                                                <h3 id={attribute.id} className="attribute-title">{attribute.name}:</h3>
-                                                <div className="current-product-attributes-items">                                        
-                                                    {
-                                                        attribute.type !== "swatch" ?
-                                                        attribute.items.map(item => {
-                                                            return <p id={item.value} className={`${item.id === attribute.selectedItem ? "attribute-active-in-cart-preview" : ""}`} key={item.id} style={{cursor:"not-allowed"}}>{item.value}</p>
-                                                        })
-                                                        :
-                                                        attribute.items.map(item => {
-                                                            return <div id={item.value} className={`swatch ${item.value === attribute.selectedItem ? "swatch-attribute-active-in-cart-preview" : ""}`} key={item.id} style={{backgroundColor: `${item.value}`, cursor:"not-allowed"}} ></div>
-                                                        })
-                                                    }
-                                                </div>
-                                            </div>
-                                        )
-                                    })    
-                                }
-                            </div>
-                            </div>
-                            <div className="cart-preview-product-photo-and-quantity">
-                                <div className="cart-preview-product-quantity">
-                                    <button onClick={() => this.increaseQuantity(product)}>+</button>
-                                    <h3>{product.productQuantity}</h3>
-                                    <button onClick={() => this.decreaseQuantity(product)}>-</button>
-                                </div>
-                                <img width="130" src={product.productPhoto} alt={product.productName}></img>
-                            </div>
-                        </div>
-                    )
-                })}
-                <div className="cart-preview-action">
-                    <button className="view-bag" onClick={this.navigateToCart}>View Bag</button>
-                    <button className="check-out">Check Out</button>
+            <div className={`cart-preview ${showCartClassName}`}>
+                <h3>My Bag: <span className="cart-products-count">{this.props.cartProducts.length} {itemCountText}</span></h3>
+                <div className="cart-preview-product-container">
+                    {this.renderProductsFromCart()}
+                    <div className="cart-total-amount">
+                        <h3>Total:</h3>
+                        <h3>{PRICING_SYMBOLS[this.props.storeCurrency] + " " + this.props.totalCartAmount}</h3> 
+                    </div>
+                    <div className="cart-preview-action">
+                        <button className="view-bag" onClick={this.navigateToCart}>View Bag</button>
+                        <button className="check-out">Check Out</button>
+                    </div>
                 </div>
             </div>
         )
+    }
+
+    renderProductsFromCart = () => {
+        const productsContainer =  this.props.cartProducts.map(product => {
+            return this.renderProduct(product) 
+        })
+        return productsContainer
+    }
+
+    renderProduct = product => { 
+        const key = this.getUniqueKeyForProduct(product)
+        
+        return (
+            <div className="cart-preview-product" key={key}>
+                <div className="cart-preview-product-details">
+                    <div className="current-product-details-group">
+                        <p>{product.productName}</p>
+                        <p>{product.productBrand}</p>
+                    </div>
+                    <p>{PRICING_SYMBOLS[product.productCurrency] + " " + product.amountValue}</p>
+                    <CartProductAttributes inCartPreview={true} attributes={product.productAttributes} key={product.id+" cart attributes"}/>
+                </div>
+                <button className="remove-from-cart-button remove-from-cart-preview-button"><img height="20" src={TrashCan} alt="trash-can" onClick={() => this.removeProductFromCart(product)}/></button>
+                <div className="cart-preview-product-photo-and-quantity">
+                    <div className="cart-preview-product-quantity">
+                        <button onClick={() => this.increaseQuantity(product)}>+</button>
+                        <h3>{product.productQuantity}</h3>
+                        <button onClick={() => this.decreaseQuantity(product)}>-</button>
+                    </div>
+                    <img width="130" src={product.productPhoto} alt={product.productName}></img>
+                </div>
+            </div>
+        )
+    }
+
+    getUniqueKeyForProduct = product => { 
+        let key=""
+        for(let attribute of product.productAttributes) { 
+            key+= attribute.selectedItem
+        }
+        return key+product.productId
     }
 
     increaseQuantity = product => {
@@ -102,12 +122,21 @@ class NavigationCart extends React.Component {
         this.props.decreaseQuantity(product)
     }
 
+    removeProductFromCart = product => { 
+        this.props.removeProductFromCart(product)
+    }
+
     showCartPreview = () => {
         this.setState({shouldShowCartContent: true})
+        this.props.setCurrencySwitcherState(false)
+        this.props.setBackdropVisibility("backdrop-blurred")
+        document.body.classList.add("disable-scrolling")
     }
 
     hideCartPreview = () => {
         this.setState({shouldShowCartContent: false})
+        this.props.setBackdropVisibility("backdrop-visible")
+        document.body.classList.remove("disable-scrolling")
     }
 
     navigateToCart = () => { 
@@ -116,12 +145,18 @@ class NavigationCart extends React.Component {
 }
 
 const mapStateToProps = state => ({
-    cart: state.cart.products
+    cartProducts: state.cart.products,
+    itemCounter: state.cart.itemCounter,
+    storeCurrency: state.currency.storeCurrency,
+    totalCartAmount: state.cart.totalCartAmount
 })
 
 const mapDispatchToProps = dispatch => ({ 
     increaseQuantity: product => dispatch(increaseProductQuantity(product)),
     decreaseQuantity:  product => dispatch(decreaseProductQuantity(product)),
+    removeProductFromCart: product => dispatch(removeFromCart(product)),
+    setBackdropVisibility: visibility => dispatch(setBackdropVisibility(visibility)),
+    setCurrencySwitcherState: state => dispatch(setCurrencySwitcherState(state))
 })
 
 export default withRouter(connect(mapStateToProps,mapDispatchToProps)(NavigationCart))

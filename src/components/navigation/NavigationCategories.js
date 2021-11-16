@@ -1,47 +1,45 @@
 import React from 'react'
+import withCategoriesName from '../hoc/withCategoriesName'
+import CSSClassName from '../../util/css-class-name'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router'
+import { compose } from 'redux'
 
 class NavigationCategories extends React.Component { 
-    constructor(props) { 
-        super(props)
-        this.state = { 
-            categoryNames: [],
-        }
-    }
 
-    componentDidMount() { 
-        const categoryNames = this.props.categories.map(category => category.name)
-        this.setState({categoryNames: categoryNames})
-    }
-
-    render() { 
-        const { categoryNames } = this.state
-
+    render() {
         return (
             <nav>
                 <ul className="main-navigation">
-                    {categoryNames.map((categoryName, categoryKey) => {
-                        return (
-                            <li key={categoryKey}>
-                                <button onClick={this.navigateToCategory} id={categoryName} className={`${this.props.currentCategory !== undefined && categoryName === this.props.currentCategory.name? "active-category" : "inactive-category"}`}>{categoryName}</button>
-                            </li>
-                        )
-                    })}
+                    {this.renderCategories()}
                 </ul>
             </nav>
         )
     }
 
-    navigateToCategory = (e) => {
-        const categoryName = e.target.id
+    renderCategories = () => { 
+        const categories = this.props.categories.map((category, index) => {
+            return this.renderCategory(category, index)
+        })
+        return categories
+    }
+
+    renderCategory = (category, index) => { 
+        const categoryClassName = this.props.currentCategory !== undefined && category.name === this.props.currentCategory? CSSClassName.active_category : CSSClassName.inactive_category
+        return (
+            <li key={category.name + " " + index}>
+                <button onClick={() => this.navigateToCategory(category.name)} id={category.name + " " + index} className={categoryClassName}>{category.name}</button>
+            </li>
+        )
+    }
+
+    navigateToCategory = categoryName => {
         this.props.history.push(`/${categoryName}`)
     }
 }
 
 const mapStateToProps = state => ({ 
-    categories: state.categories.categories,
-    currentCategory: state.categories.currentCategory, 
+    currentCategory: state.category.currentCategory, 
 })
 
-export default withRouter(connect(mapStateToProps)(NavigationCategories))
+export default compose(withCategoriesName, withRouter)(connect(mapStateToProps)(NavigationCategories))

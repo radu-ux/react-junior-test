@@ -1,91 +1,34 @@
 import React from "react"
-import ProductDetailPage from "./ProductDetailPage"
-import ProductListPage from "./ProductListPage"
+import PDPMain from "./pdp/PDPMain"
+import PLPMain from "./plp/PLPMain"
 import Layout from "./Layout"
 import Cart from './Cart'
 import { connect } from "react-redux"
+import { DEFAULT_CATEGORY_PAGE_ROUTE } from "../util/constants"
 import { Redirect, withRouter } from "react-router"
 import { setCurrentCategory } from "../store/slices/categoriesSlice"
-import PageNotfound from "./404"
 
 class RouterReducer extends React.Component { 
 
-    getDefaultCategoryName = () => {
-        return this.props.categories[0].name
-    }
-
-    isCategoryValid = categoryName => { 
-       const validationObj = this.props.categories.find(category => category.name === categoryName) 
-       if(validationObj !== undefined) {
-           return true
-       } 
-
-       return false
-    }
-
-    isProductFromCategoryValid = (categoryName, productName) => { 
-        const category = this.props.categories.find(category => category.name === categoryName)
-        const productObj = category.products.find(product => product.name === productName)
-        if(productObj !== undefined) {
-            return true
-        } 
-
-        return false
-    }
-
-    componentDidUpdate(prevProps) { 
-        if(prevProps.areCategoriesFetched !== this.props.areCategoriesFetched || prevProps.match.params.category !== this.props.match.params.categoryName) { 
-            const categoryName = this.props.match.params.categoryName
-            if(categoryName !== undefined) { 
-                this.props.updateCurrentCategory(categoryName)
-            }
-        }
-    }
-
     render() { 
-        const { categoryName, productName } = this.props.match.params
-     
+        const { categoryName, productId } = this.props.match.params
+        
         if(this.props.match.path === '/') {
-            return this.props.areCategoriesFetched ? <Redirect to={`/${this.getDefaultCategoryName()}`} /> : null
+            return <Redirect to={DEFAULT_CATEGORY_PAGE_ROUTE} />
         } else if (this.props.match.path === '/cart') {
-            return this.props.areCategoriesFetched ? <Layout><Cart /></Layout> : null
-        } else if (categoryName !== undefined && productName === undefined) {
-            
-            if (this.props.areCategoriesFetched ) {
-                if(this.props.currentCategory !== undefined) {
-                    if(this.isCategoryValid(categoryName)) {
-                        return <Layout><ProductListPage /></Layout>
-                    }   
-                }
-                return <PageNotfound />
-            } else {
-                return null
-            }
-        } else if (categoryName !== undefined && productName !== undefined) {
-
-            if(this.props.areCategoriesFetched) {
-                if(this.props.currentCategory !== undefined) {
-                    if(this.isProductFromCategoryValid(categoryName, productName)) {
-                        return <Layout><ProductDetailPage /></Layout>
-                    }   
-                }
-                return <PageNotfound />
-            } else { 
-                return null
-            }
+            return <Layout><Cart /></Layout>
+        } else if (categoryName !== undefined && productId === undefined) {
+            return <Layout><PLPMain selectedCategory={categoryName}/></Layout>
+        } else if (categoryName !== undefined && productId !== undefined) {
+            return <Layout><PDPMain productId={productId}/></Layout>
         } 
     }
 
 }
 
-const mapStateToProps = state => ({ 
-    categories: state.categories.categories,
-    currentCategory: state.categories.currentCategory,
-    areCategoriesFetched: state.categories.areCategoriesFetched
-})
 
 const mapDispatchToProps = dispatch => ({ 
-    updateCurrentCategory: categoryName => dispatch(setCurrentCategory(categoryName))
+    setCurrentCategory: categoryName => dispatch(setCurrentCategory(categoryName))
 })
 
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(RouterReducer))
+export default withRouter(connect(null, mapDispatchToProps)(RouterReducer))

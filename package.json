@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@apollo/client": "^3.4.16",
+    "@apollo/react-components": "^4.0.0",
     "@babel/core": "^7.15.8",
     "@babel/preset-env": "^7.15.8",
     "@reduxjs/toolkit": "^1.6.2",
@@ -19,6 +20,10 @@
     "react-redux": "^7.2.6",
     "react-router-dom": "^5.3.0",
     "react-scripts": "4.0.3",
+    "recompose": "^0.30.0",
+    "styled-components": "^5.3.3",
+    "uuid": "^8.3.2",
+    "uuidv4": "^6.2.12",
     "web-vitals": "^1.0.1"
   },
   "scripts": {

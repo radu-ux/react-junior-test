@@ -1,13 +1,13 @@
 import React from "react"
 
-class PageNotfound extends React.Component {
+class NetworkError extends React.Component {
     render() {
         return (
             <div className="generic-error">
-                <h1>Page Not Found</h1>
+                <h1>Network Error</h1>
             </div>
         )
     }
 }
 
-export default PageNotfound
+export default NetworkError

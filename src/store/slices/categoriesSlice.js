@@ -1,32 +1,16 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit"
-import { apolloClient, availableCategoriesQuery, allCategoriesQuery } from "../util/gql"
+import { createSlice, } from "@reduxjs/toolkit"
 
 const initialState = {
-    categories: [],
-    currentCategory: undefined,
-    areCategoriesFetched: false
+    currentCategory: undefined
 }
-
-export const fetchAvailableCategories = createAsyncThunk('categories/fetchAvailableCategories', async () => {
-    const allCategoriesQueryResponse = await apolloClient.query({query: allCategoriesQuery})
-    const availableCategoriesQueryResponse = await apolloClient.query({query: availableCategoriesQuery})
-    return {categories: allCategoriesQueryResponse.data.categories, availableCategories: availableCategoriesQueryResponse.data.categories}
-})
 
 const categoriesSlice = createSlice({
     name: 'categories',
     initialState, 
     reducers: {
         setCurrentCategory: (state, action) => {
-            const categoryName = action.payload
-            state.currentCategory = state.categories.find(category => category.name === categoryName)
+            state.currentCategory = action.payload
         }
-    },
-    extraReducers: (build) => { 
-        build.addCase(fetchAvailableCategories.fulfilled, (state, action) => {
-            state.categories = action.payload.categories
-            state.areCategoriesFetched = true
-        })
     }
 })
 

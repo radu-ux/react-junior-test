@@ -1,8 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { PRICING_SYMBOLS } from "../../util/pricing_symbols";
 
 const initialState = {
-    products: []
+    products: [],
+    itemCounter: 0,
+    shouldRenderPLPAddToCartForm: false,
+    totalCartAmount: 0,
+    currentProduct: null
 }
 
 const areAttributesTheSame = (cartProduct, currentProduct) => { 
@@ -52,8 +55,10 @@ const cartSlice = createSlice({
     name: 'cart',
     initialState,
     reducers: {
+        
         addToCart: (state, action) => { 
             const currentProduct = action.payload
+            let newTotalCartAmount = state.totalCartAmount
             if(state.products.length > 0) {
                 var productAlreadyInCart = false
                 for(var i=0; i<state.products.length; i++) { 
@@ -61,57 +66,112 @@ const cartSlice = createSlice({
                     var areProductsEqual =false
                     if(areProductsTheSame(cartProduct, currentProduct)) { 
                         cartProduct.productQuantity++
-                        cartProduct.amountValue += getInitialAmountForCurrency(action.payload.productPrices, action.payload.productCurrency)
+                        cartProduct.amountValue += getInitialAmountForCurrency(currentProduct.productPrices, currentProduct.productCurrency)
                         productAlreadyInCart=true
                         areProductsEqual=true
                         break
                     }
                 }
                 if(!productAlreadyInCart || !areProductsEqual) { 
-                    state.products.push(action.payload)
+                    state.products.push(currentProduct)
+                    newTotalCartAmount += currentProduct.amountValue
                 }
             } else { 
-                state.products.push(action.payload)
+                state.products.push(currentProduct)
+                newTotalCartAmount += currentProduct.amountValue
             }
             
+            state.totalCartAmount = Number(newTotalCartAmount.toFixed(2))
+            state.itemCounter++
         },
 
         removeFromCart: (state, action) => { 
-            const indexOfProductInArray = state.products.indexOf(action.payload)
-            state.products.splice(indexOfProductInArray, 1)
+            const productToRemove = action.payload
+            const amountToSubtract = productToRemove.productQuantity * getInitialAmountForCurrency(productToRemove.productPrices, productToRemove.productCurrency)
+            let currentTotalCartAmount = state.totalCartAmount
+            let indexOfProductInArray = -1
+
+            for(let i=0; i<state.products.length; i++) { 
+                const product = state.products[i]
+                if(product.productId === productToRemove.productId) {
+                    indexOfProductInArray = i
+                    break;
+                }
+            } 
+
+            currentTotalCartAmount -= amountToSubtract
+            state.totalCartAmount = Number(currentTotalCartAmount.toFixed(2))
+            state.itemCounter -= productToRemove.productQuantity
+            
+            if(indexOfProductInArray !== -1) {
+                state.products.splice(indexOfProductInArray, 1)   
+            } 
         },
         
         increaseProductQuantity: (state, action) => { 
-            const initialPrice = getInitialAmountForCurrency(action.payload.productPrices, action.payload.productCurrency)
+            let totalCartAmount = state.totalCartAmount
             state.products.forEach(product => { 
                 if(areProductsTheSame(product, action.payload)) { 
                     product.productQuantity++
-                    product.amountValue = parseFloat((product.amountValue + initialPrice).toFixed(2))
+                    state.itemCounter++
+                    totalCartAmount += product.amountValue
                 }
             })
+            state.totalCartAmount = Number(totalCartAmount.toFixed(2))
         },
 
         decreaseProductQuantity: (state, action) => { 
-            const initialPrice = getInitialAmountForCurrency(action.payload.productPrices, action.payload.productCurrency)
+            let totalCartAmount = state.totalCartAmount
             state.products.forEach(product => { 
                 if(areProductsTheSame(product, action.payload) && product.productQuantity > 1) { 
                     product.productQuantity--
-                    product.amountValue = parseFloat((product.amountValue - initialPrice).toFixed(2))
+                    state.itemCounter--
+                    totalCartAmount -= product.amountValue
                 }
             })
-        },        
+            state.totalCartAmount = Number(totalCartAmount.toFixed(2))
+        },
 
-        updateCurrency: (state, action) => { 
+        setCartCurrency: (state, action) => { 
             const newCurrency = action.payload
             if(state.products.length > 0) {
+                let newTotalAmount = 0
                 state.products.forEach(product => { 
+                    const currentProductAmount = getCurrentAmountForCurrency(product.productPrices, newCurrency, product.productQuantity)
                     product.productCurrency = newCurrency
-                    product.amountValue = getCurrentAmountForCurrency(product.productPrices, newCurrency, product.productQuantity) 
+                    product.amountValue = getInitialAmountForCurrency(product.productPrices, newCurrency) 
+                    newTotalAmount += Number(currentProductAmount.toFixed(2))
                 })
+                state.totalCartAmount = newTotalAmount
             }
+        },
+
+        canRenderPLPCartForm: (state, action) => { 
+            state.shouldRenderPLPAddToCartForm = action.payload
+        },
+
+        setCurrentProduct: (state, action) => { 
+            state.currentProduct = action.payload
+        }, 
+
+        initializeSelectedItemsForAttributes: state => {
+            state.currentProduct.attributes.forEach(attribute => {
+                attribute.selectedItem = null
+            })
+        },
+
+        setSelectedItemOfAttribute: (state, action) => { 
+            const { selectedItemValue, attributeId } = action.payload
+            state.currentProduct.attributes.forEach(attribute => { 
+                if(attribute.id === attributeId) { 
+                    attribute.selectedItem = selectedItemValue
+                }
+            })
         }
     }
 })
 
-export const { addToCart, removeFromCart, increaseProductQuantity, decreaseProductQuantity, updateCurrency } = cartSlice.actions
+export const { addToCart, removeFromCart, increaseProductQuantity, decreaseProductQuantity, 
+               setCartCurrency, canRenderPLPCartForm, setCurrentProduct, 
+               initializeSelectedItemsForAttributes, setSelectedItemOfAttribute } = cartSlice.actions
 export default cartSlice.reducer

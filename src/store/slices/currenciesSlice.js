@@ -1,28 +1,20 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { apolloClient, currenciesQuery } from '../util/gql'
+import { createSlice } from '@reduxjs/toolkit'
 
-const initialState = { currencies: [], currentCurrency: '' }
-
-export const fetchCurrencies = createAsyncThunk('currencies/fetchCurrencies', async () => {
-    const response = await apolloClient.query({query: currenciesQuery})
-    return response.data.currencies
-})
+const initialState = { storeCurrency: 'USD', currencySwitcherState: false }
 
 const currenciesSlice = createSlice({
     name: 'currencies',
     initialState, 
     reducers: {
-        setCurrentCurrency: (state, action) => { 
-            state.currentCurrency = action.payload
+        setStoreCurrency: (state, action) => { 
+            state.storeCurrency = action.payload
+        },
+
+        setCurrencySwitcherState: (state, action) => {
+            state.currencySwitcherState = action.payload
         }
-    },
-    extraReducers: (build) => { 
-        build.addCase(fetchCurrencies.fulfilled, (state, action) => { 
-            state.currencies = action.payload
-            state.currentCurrency = action.payload.find(currency => currency === 'USD')
-        })
     }
 })
 
-export const { setCurrentCurrency } = currenciesSlice.actions
+export const { setStoreCurrency, setCurrencySwitcherState } = currenciesSlice.actions
 export default currenciesSlice.reducer

@@ -1,7 +1,7 @@
 import React from "react"
 import { PRICING_SYMBOLS } from "../../util/pricing_symbols"
 
-const withCurrencyConverter = Component => 
+const withCurrencyConverter = WrappedComponent => 
     class extends React.Component {
         priceToString = (prices, currentCurrency) => {
             var amount = 0
@@ -26,7 +26,7 @@ const withCurrencyConverter = Component =>
         }
 
         render() { 
-            return <Component priceToString={this.priceToString} getAmountForCurrency={this.getAmountForCurrency}/>
+            return <WrappedComponent {...this.props} priceToString={this.priceToString} getAmountForCurrency={this.getAmountForCurrency}/>
         }
     }
 
