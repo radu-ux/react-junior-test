@@ -4,15 +4,12 @@ import store from './store/store'
 import RouterReducer from './components/RouterReducer'
 import PageNotfound from './components/404'
 import { Provider } from 'react-redux'
-import { createBrowserHistory } from 'history'
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
+import { BrowserRouter, Switch, Route } from 'react-router-dom'
 import './styles/index.css'
-
-const history = createBrowserHistory()
 
 ReactDOM.render(
   <Provider store={store}>
-    <Router history={history}>
+    <BrowserRouter>
       <Switch>
         <Route path='/cart' component={RouterReducer} />
         <Route path='/error' component={PageNotfound} />
@@ -21,7 +18,7 @@ ReactDOM.render(
         <Route path='/:categoryName' component={RouterReducer}/>
         <Route path='/' component={RouterReducer} />
       </Switch>
-    </Router>
+    </BrowserRouter>
   </Provider>,
   document.getElementById('root')
 );
